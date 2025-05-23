@@ -1,5 +1,5 @@
-use std::{collections::LinkedList, io::{stdout, Write}, process, sync::{Arc, Mutex}, thread, time::Duration};
-use crossterm::event::{self, Event, KeyCode};
+use std::{collections::LinkedList, io::{stdout, Write}, time::{self, Duration}};
+use crossterm::event::{self};
 use rand::{rngs::ThreadRng, Rng};
 
 struct Snake{
@@ -99,49 +99,43 @@ fn main() {
     // 清屏并显示自定义界面
     write!(stdout, "\x1B[2J\x1B[1;1H").unwrap();
 
-	let mut snake = Arc::new(Mutex::new(Snake::new(30)));
+	let mut snake = Snake::new(30);
 	let mut map = Map::new(30);
 	let mut last_char = None;
-
-	thread::spawn({
-		let snake = Arc::clone(&snake);
-		move ||{
-			let mut rng = rand::thread_rng();
-			let mut cnt = 5 * 1000 / 250;
-			loop {
-				cnt -= 1;
-				if cnt <= 0 {
-					map.gen_fruit(&mut rng);
-					cnt = 5 * 1000 / 250;
-				}
-				let live = snake.lock().unwrap().next(&mut map);
-				if !live {
-					process::exit(0);
-				}
-				thread::sleep(Duration::from_millis(250));
-			}
-		}
-	});
+	let mut rng = rand::thread_rng();
+	let mut last_gen_time = time::Instant::now();
+	let mut last_poll_time = time::Instant::now();
+	let POLL_TIME = Duration::from_millis(250);
+	let mut poll_time = POLL_TIME.clone();
 
 	loop {
-		// 等待最多 100ms 看是否有事件
-		if event::poll(Duration::from_millis(250)).unwrap() {
-			// 有事件，读取它
+		last_poll_time = time::Instant::now();
+		if event::poll(poll_time).unwrap() {
 			if let event::Event::Key(key_event) = event::read().unwrap() {
 				if let event::KeyCode::Char(c) = key_event.code {
-					// 只处理字符输入
 					if last_char != Some(c) {
-						snake.lock().unwrap().set_dir(c);
 						last_char = Some(c);
+						snake.set_dir(c);
+					} else {
+						if let Some(d) = POLL_TIME.checked_sub(last_poll_time.elapsed()) {
+							poll_time = d;
+							continue;
+						}
 					}
 				} else if let event::KeyCode::Esc = key_event.code {
 					break;
 				}
 			}
-		} else {
-			// 可选：超时后重置 last_char，允许再次识别相同字符
-			last_char = None;
 		}
+
+		if last_gen_time.elapsed() >= Duration::from_secs(5) {
+			map.gen_fruit(&mut rng);
+			last_gen_time = time::Instant::now();
+		}
+		if snake.next(&mut map) == false {
+			break;
+		}
+		poll_time = POLL_TIME.clone();
 	}
 
 
