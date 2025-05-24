@@ -1,11 +1,16 @@
-use std::{collections::LinkedList, io::{stdout, Write}, process, sync::{Arc, Mutex}, thread, time::Duration};
-use crossterm::event::{self, Event, KeyCode};
+use std::{collections::LinkedList, io::{stdout, Write}, process, sync::{Arc, Mutex}, thread, time::{Duration, Instant}};
+use crossterm::event::{self};
 use rand::{rngs::ThreadRng, Rng};
+
+const UPDATE_TIME: u32 = 160;
+const LEAST_UPDATE_TIME: u32 = 80;
+
 
 struct Snake{
 	body: LinkedList<(u32, u32)>,
 	n: u32,
-	dir: char
+	dir: char,
+	last_update: Instant
 }
 
 impl Snake{
@@ -13,10 +18,14 @@ impl Snake{
 		Snake { 
 			body: [(n-1, (n+1)/2)].iter().cloned().collect(),
 			n: n, 
-			dir: 'w' 
+			dir: 'w',
+			last_update: Instant::now()
 		}
 	}
 	fn next(&mut self, map: &mut Map) -> bool {
+		if self.last_update.elapsed() < Duration::from_millis(LEAST_UPDATE_TIME as u64) {
+			return true;
+		}
 		let (mut x, mut y) = self.body.front().unwrap().clone();
 		match self.dir {
 			'w' => x -= 1,
@@ -39,10 +48,14 @@ impl Snake{
 			write!(stdout(), "\x1B[{};{}H*", x, y).unwrap();
 		}
 		stdout().flush().unwrap();
+		self.last_update = Instant::now();
 		true
 	}
 	fn set_dir(&mut self, c: char) {
 		self.dir = c;
+	}
+	fn last_update_time(&self) -> Instant {
+		self.last_update
 	}
 }
 
@@ -99,48 +112,50 @@ fn main() {
     // 清屏并显示自定义界面
     write!(stdout, "\x1B[2J\x1B[1;1H").unwrap();
 
-	let mut snake = Arc::new(Mutex::new(Snake::new(30)));
-	let mut map = Map::new(30);
+	let snake = Arc::new(Mutex::new(Snake::new(30)));
+	let map = Arc::new(Mutex::new(Map::new(30)));
 	let mut last_char = None;
+	let mut sleep_time = Duration::from_millis(UPDATE_TIME as u64);
 
 	thread::spawn({
 		let snake = Arc::clone(&snake);
+		let map = Arc::clone(&map);
 		move ||{
 			let mut rng = rand::thread_rng();
-			let mut cnt = 5 * 1000 / 250;
+			let mut cnt = 5 * 1000 / UPDATE_TIME;
 			loop {
 				cnt -= 1;
 				if cnt <= 0 {
-					map.gen_fruit(&mut rng);
-					cnt = 5 * 1000 / 250;
+					map.lock().unwrap().gen_fruit(&mut rng);
+					cnt = 5 * 1000 / UPDATE_TIME;
 				}
-				let live = snake.lock().unwrap().next(&mut map);
-				if !live {
-					process::exit(0);
+				{
+					let mut ls = snake.lock().unwrap();
+					let live = ls.next(&mut *map.lock().unwrap());
+					if !live {
+						process::exit(0);
+					}
+					sleep_time = Duration::from_millis(UPDATE_TIME as u64) - ls.last_update_time().elapsed();
 				}
-				thread::sleep(Duration::from_millis(250));
+				thread::sleep(sleep_time);
 			}
 		}
 	});
 
 	loop {
-		// 等待最多 100ms 看是否有事件
-		if event::poll(Duration::from_millis(250)).unwrap() {
-			// 有事件，读取它
-			if let event::Event::Key(key_event) = event::read().unwrap() {
-				if let event::KeyCode::Char(c) = key_event.code {
-					// 只处理字符输入
-					if last_char != Some(c) {
-						snake.lock().unwrap().set_dir(c);
-						last_char = Some(c);
-					}
-				} else if let event::KeyCode::Esc = key_event.code {
-					break;
+		if let event::Event::Key(key_event) = event::read().unwrap() {
+			if let event::KeyCode::Char(c) = key_event.code {
+				// 只处理字符输入
+				if last_char != Some(c) {
+					print!("\x1B[31;1H{}", c);
+					let mut ls = snake.lock().unwrap();
+					ls.set_dir(c);
+					ls.next(&mut *map.lock().unwrap());
+					last_char = Some(c);
 				}
+			} else if let event::KeyCode::Esc = key_event.code {
+				break;
 			}
-		} else {
-			// 可选：超时后重置 last_char，允许再次识别相同字符
-			last_char = None;
 		}
 	}
 
