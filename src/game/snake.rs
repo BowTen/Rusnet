@@ -1,5 +1,4 @@
 use std::{collections::LinkedList};
-use std::thread;
 use std::time::{Duration, Instant};
 use ggez::graphics::{Canvas, Color, DrawMode, DrawParam, Mesh, Rect};
 use ggez::Context;
@@ -12,46 +11,58 @@ pub struct Snake {
     body: LinkedList<Segment>,
 	last_tail: Segment,
     dir: Direction,
+	next_dir: [Option<Direction>; 2],
 	n: u32,
 	last_step_time: Instant,
 	speed: f32,
-	step_time: Duration,
-	turn_time: Duration
+	step_time: Duration
 }
 
 impl Snake {
-    pub fn new(n: u32, speed: f32, step_time: Duration, turn_time: Duration) -> Self {
-        Self {
+    pub fn new(n: u32, speed: f32, step_time: Duration) -> Self {
+		Self {
             body: [(n / 2, n - 4).into(), (n / 2, n - 3).into()].iter().cloned().collect(),
 			last_tail: (n / 2, n - 2).into(),
             dir: Direction::Up,
+			next_dir: [None, None],
 			n,
 			last_step_time: Instant::now(),
 			speed,
-			step_time,
-			turn_time
+			step_time
         }
     }
 
-    pub fn step(&mut self, map: &mut Map) -> bool {
-		self.next(map, self.step_time)
+	fn last_dir(&self) -> Direction {
+		if self.next_dir[1] != None {
+			self.next_dir[1].unwrap()
+		}else if self.next_dir[0] != None {
+			self.next_dir[0].unwrap()
+		}else {
+			self.dir
+		}
 	}
 
-    pub fn trun(&mut self, map: &mut Map, dir: Direction) {
-		if dir == self.dir || dir == self.dir.inverse() {
+    pub fn trun(&mut self, dir: Direction) {
+		if self.next_dir[1] != None || dir == self.last_dir() || dir == self.last_dir().inverse() {
 			return;
 		}
-		self.dir = dir;
-		if let Some(sleep_time) = self.turn_time.checked_sub(self.last_step_time.elapsed()) {
-			thread::sleep(sleep_time);
+		if self.next_dir[0] == None {
+			self.next_dir[0] = Some(dir);
+		}else {
+			self.next_dir[1] = Some(dir);
 		}
-		self.next(map, self.turn_time);
-    }
+	}
 
-    fn next(&mut self, map: &mut Map, duration: Duration) -> bool {
-		if self.last_step_time.elapsed() < duration {
+    pub fn next(&mut self, map: &mut Map) -> bool {
+		if self.last_step_time.elapsed() < self.step_time {
 			return true;
 		}
+		if self.next_dir[0] != None {
+			self.dir = self.next_dir[0].unwrap();
+			self.next_dir[0] = self.next_dir[1];
+			self.next_dir[1] = None;
+		}
+
         let (mut x, mut y) = self.body.front().unwrap().clone().into();
         match self.dir {
             Direction::Up => y -= 1,

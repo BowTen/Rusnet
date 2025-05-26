@@ -16,14 +16,13 @@ pub struct GameState {
     game_over: bool,
 	map_size: u32,
 	cell_size: f32,
-	step_time: Duration,
-	turn_time: Duration
+	step_time: Duration
 }
 
 impl GameState {
-    pub fn new(ctx: &mut Context, map_size: u32, cell_size: f32, step_time: Duration, turn_time: Duration) -> Self {
+    pub fn new(ctx: &mut Context, map_size: u32, cell_size: f32, step_time: Duration) -> Self {
         Self {
-            snake: Snake::new(map_size, cell_size/(step_time.as_millis() as f32), step_time, turn_time),
+            snake: Snake::new(map_size, cell_size/(step_time.as_millis() as f32), step_time),
 			map: Map::new(map_size),
 			rng: rand::thread_rng(),
             last_update_time: Instant::now(),
@@ -32,12 +31,11 @@ impl GameState {
 			map_size,
 			cell_size,
 			step_time,
-			turn_time
         }
     }
 
 	fn restart(&mut self) {
-		self.snake = Snake::new(self.map_size, self.cell_size/(self.step_time.as_millis() as f32), self.step_time, self.turn_time);
+		self.snake = Snake::new(self.map_size, self.cell_size/(self.step_time.as_millis() as f32), self.step_time);
 		self.map = Map::new(self.map_size);
 		self.game_over = false;
 	}
@@ -48,7 +46,7 @@ impl EventHandler for GameState {
         if self.game_over {
             return Ok(());
         }
-        if !self.snake.step(&mut self.map) {
+        if !self.snake.next(&mut self.map) {
             self.game_over = true;
         }
 
@@ -99,7 +97,7 @@ impl EventHandler for GameState {
 				},
 				_ => {
 					if let Some(dir) = Direction::from_keycode(key_code) {
-						self.snake.trun(&mut self.map, dir);
+						self.snake.trun(dir);
 					}
 				}
 			}
