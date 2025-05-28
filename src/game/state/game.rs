@@ -1,13 +1,14 @@
-use ggez::event::EventHandler;
-use ggez::graphics::{self, Color};
+use ggez::graphics::Canvas;
 use ggez::input::keyboard::{self, KeyCode};
 use ggez::Context;
 use ggez::GameResult;
 use rand::{rngs::ThreadRng, Rng};
 use std::time::{Duration, Instant};
 use crate::game::{Snake, Map, Direction};
+use crate::game::state::StateResult;
 
-pub struct GameState {
+
+pub struct Game {
     snake: Snake,
     map: Map,
     rng: ThreadRng,
@@ -19,7 +20,7 @@ pub struct GameState {
 	step_time: Duration
 }
 
-impl GameState {
+impl Game {
     pub fn new(ctx: &mut Context, map_size: u32, cell_size: f32, step_time: Duration) -> Self {
         Self {
             snake: Snake::new(map_size, cell_size/(step_time.as_millis() as f32), step_time),
@@ -39,15 +40,11 @@ impl GameState {
 		self.map = Map::new(self.map_size);
 		self.game_over = false;
 	}
-}
 
-impl EventHandler for GameState {
-    fn update(&mut self, ctx: &mut Context) -> GameResult {
-        if self.game_over {
-            return Ok(());
-        }
+	pub fn update(&mut self, ctx: &mut Context) -> Result<StateResult, ggez::GameError> {
         if !self.snake.next(&mut self.map) {
-            self.game_over = true;
+			self.game_over = true;
+			return Ok(StateResult::GameOver);
         }
 
         // 每隔一段时间更新一次
@@ -61,31 +58,28 @@ impl EventHandler for GameState {
             self.last_update_time = Instant::now();
         }
 
-        Ok(())
+        Ok(StateResult::Ok)
     }
 
-    fn draw(&mut self, ctx: &mut Context) -> GameResult {
-        let mut canvas = graphics::Canvas::from_frame(ctx, Color::BLACK);
-
+    pub fn draw(&mut self, ctx: &mut Context, canvas: &mut Canvas) -> GameResult {
         // 绘制边框
-		self.map.draw_map(ctx, &mut canvas, self.cell_size, self.map_size)?;
+		self.map.draw_map(ctx, canvas, self.cell_size, self.map_size)?;
 
         // 绘制水果
-		self.map.draw_fruits(ctx, &mut canvas, self.cell_size)?;
+		self.map.draw_fruits(ctx, canvas, self.cell_size)?;
 
         // 绘制蛇
-		self.snake.draw(ctx, &mut canvas, self.cell_size)?;
+		self.snake.draw(ctx, canvas, self.cell_size)?;
 
-        canvas.finish(ctx)?;
         Ok(())
     }
 
-	fn key_down_event(
+	pub fn key_down_event(
 			&mut self,
 			ctx: &mut Context,
 			input: keyboard::KeyInput,
 			_repeated: bool,
-		) -> Result<(), ggez::GameError> {
+		) -> Result<StateResult, ggez::GameError> {
 		
 		if let Some(key_code) = input.keycode {
 			match key_code {
@@ -103,6 +97,6 @@ impl EventHandler for GameState {
 			}
 		}
 
-		Ok(())
+		Ok(StateResult::Ok)
 	}
 }
