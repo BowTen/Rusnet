@@ -1,5 +1,5 @@
 use std::time::Duration;
-use rusnet::game::GameState;
+use rusnet::client::MainState;
 
 const CELL_SIZE: f32 = 35.0; // 每个格子大小
 const MAP_SIZE: u32 = 35;    // 地图大小（30x30 格子）
@@ -12,6 +12,6 @@ fn main() {
         .build()
         .expect("无法创建上下文");
 
-    let game_state = GameState::new(&mut ctx, MAP_SIZE, CELL_SIZE, STEP_TIME);
+    let game_state = MainState::new(&mut ctx, MAP_SIZE, CELL_SIZE, STEP_TIME);
     ggez::event::run(ctx, event_loop, game_state);
 }

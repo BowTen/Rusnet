@@ -9,6 +9,3 @@ pub use segment::Segment;
 
 pub mod direction;
 pub use direction::Direction;
-
-pub mod state;
-pub use state::GameState;
