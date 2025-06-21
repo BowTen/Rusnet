@@ -1,5 +1,5 @@
 use ggez::graphics::{PxScale, Transform};
-use ggez::input::keyboard::KeyCode;
+use ggez::input::keyboard::{KeyCode, KeyMods};
 use ggez::mint::Point2;
 use ggez::{graphics::{self, Color, DrawParam, Drawable, Mesh, Text}, Context};
 use crate::common::tool;
@@ -33,6 +33,15 @@ impl InputBox {
 
 	pub fn set_rect(&mut self, rect: Mesh) {
 		self.rect = rect;
+	}
+
+	pub fn content(&self) -> String {
+		self.text.contents()
+	}
+
+	pub fn set_content(&mut self, content: String) {
+		self.text = Text::new(content);
+		self.text.set_scale(35.0);
 	}
 }
 
@@ -69,15 +78,13 @@ impl InputObject for InputBox {
 			input: ggez::input::keyboard::KeyInput,
 			repeated: bool,
 			) -> Result<super::StateResult, ggez::GameError> {
-		if let Some(key_code) = &input.keycode {
-			if let Some(c) = tool::to_char(key_code) {
-				self.text.add(c);
-			}else if *key_code == KeyCode::Back {
-				let mut content = self.text.contents();
-				content.pop();
-				self.text = Text::new(content);
-				self.text.set_scale(PxScale::from(35.0));
-			}
+		if let Some(c) = tool::to_char(&input) {
+			self.text.add(c);
+		}else if Some(KeyCode::Back) == input.keycode {
+			let mut content = self.text.contents();
+			content.pop();
+			self.text = Text::new(content);
+			self.text.set_scale(PxScale::from(35.0));
 		}
 		Ok(StateResult::Ok)
 	}
@@ -88,5 +95,13 @@ impl InputObject for InputBox {
 
 	fn dimensions(&self, gfx: &Context) -> Option<ggez::graphics::Rect> {
 		Drawable::dimensions(self, gfx)
+	}
+
+	fn as_any(&self) -> &dyn std::any::Any {
+		self
+	}
+
+	fn as_any_mut(&mut self) -> &mut dyn std::any::Any {
+		self
 	}
 }

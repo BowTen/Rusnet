@@ -65,4 +65,12 @@ impl InputObject for StrOption {
 	fn dimensions(&self, gfx: &Context) -> Option<ggez::graphics::Rect> {
 		Drawable::dimensions(self, gfx)
 	}
+
+	fn as_any(&self) -> &dyn std::any::Any {
+		self
+	}
+
+	fn as_any_mut(&mut self) -> &mut dyn std::any::Any {
+		self
+	}
 }

@@ -3,12 +3,12 @@ use ggez::graphics::{Canvas, Color};
 use ggez::input::keyboard;
 use ggez::Context;
 use ggez::GameResult;
-use std::net::UdpSocket;
+use std::net::{SocketAddr, UdpSocket};
 use std::sync::mpsc::{self, Receiver, Sender};
 use std::thread;
 use std::time::Duration;
-use crate::client::MenuState;
 use crate::common::{GameStateHandler, StateResult};
+use crate::server::room_state::RoomState;
 use crate::net::message::Message;
 
 
@@ -20,13 +20,13 @@ pub struct MainState {
 }
 
 impl MainState {
-	pub fn new(ctx: &mut Context, map_size: u32, cell_size: f32, step_time: Duration) -> MainState {
-		MainState { 
-			game_state: Box::new(MenuState::new(map_size, cell_size, step_time)),
+	pub fn new(ctx: &mut Context, game_state: Box<dyn GameStateHandler>, map_size: u32, cell_size: f32, step_time: Duration) -> Result<MainState, String> {
+		Ok(MainState { 
+			game_state,
 			map_size, 
 			cell_size, 
 			step_time,
-		}
+		})
 	}
 }
 
