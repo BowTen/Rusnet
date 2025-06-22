@@ -8,3 +8,6 @@ mod menu_state;
 pub use menu_state::MenuState;
 
 mod room_menu;
+
+mod room_state;
+pub use room_menu::RoomMenu;

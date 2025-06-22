@@ -21,6 +21,10 @@ impl StrOption {
 		self.text.set_scale(PxScale::from(x));
 	}
 
+	pub fn contents(&self) -> String {
+		self.text.contents()
+	}
+
 	pub fn set_key_down_cb(&mut self, cb: Box<KeyDownCallBack>) {
 		self.key_down_cb = Some(cb);
 	}

@@ -13,6 +13,8 @@ pub enum Message {
 	},
 	SetReady(bool),
 	Start,
+	//TODO: add game info
+	StartState,
 	ExitRoom,
 	AddPlayer(SocketAddr),
 	RemovePlayer(SocketAddr),
@@ -31,6 +33,9 @@ pub enum ResponseBody{
 	None,
 	Str(String),
 	RoomPort(u16),
+	RoomInfo{
+		players: Vec<(SocketAddr, bool)>,
+	},
 }
 
 #[derive(Serialize, Deserialize, Clone)]

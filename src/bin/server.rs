@@ -1,6 +1,5 @@
-use std::{net::UdpSocket, process, thread, time::Duration};
-use ggez::{conf::WindowMode, winit::{event_loop::EventLoopBuilder, platform::windows::EventLoopBuilderExtWindows}, Context, ContextBuilder};
-use rusnet::{net::message::{Message, MessageSocket, ResponseBody, StatusCode}, server};
+use std::{net::UdpSocket, process, time::Duration};
+use rusnet::{net::message::{Message, MessageSocket, ResponseBody, StatusCode}};
 
 const CELL_SIZE: f32 = 35.0; // 每个格子大小
 const MAP_SIZE: u32 = 35;    // 地图大小（30x30 格子）
@@ -21,13 +20,16 @@ fn main() {
 					//check password
 					if server_password == PASSWORD {
 						//create room
-						if let Err(_) = process::Command::new(r"target\debug\server_room.exe")
+						// TODO:fix run room
+						if let Err(e) = process::Command::new("target/debug/server_room")
 							.arg(client.to_string())
 							.arg(room_password.clone())
 							.spawn() {
+								println!("{}", e);
 								let msg = Message::Response { status: StatusCode::ERR, content: ResponseBody::None };
 								socket.send_msg_to(&msg, client);
 							}
+						// socket.send_msg_to(&Message::Response { status: StatusCode::OK, content: ResponseBody::None }, client).expect("send fail");
 						println!("create a new room for client[{}], room password: {}", client, room_password);
 					}else {
 						println!("Password err");

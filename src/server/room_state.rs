@@ -76,23 +76,20 @@ impl RoomState {
 		}
 		//join
 		self.add_player(addr);
-		let rsp = Message::Response { status: message::StatusCode::OK, content: message::ResponseBody::None };
+		let rsp = Message::Response { status: message::StatusCode::OK, content: message::ResponseBody::RoomInfo { players: self.players.clone() } };
 		self.sender.send((rsp, addr));
 		
 		Ok(StateResult::Ok)
 	}
 
 	fn set_ready(&mut self, addr: SocketAddr, is_ready: bool) -> Result<StateResult, GameError> {
+		println!("setready {}", is_ready);
 		if let Some((_, value)) = self.players.iter_mut().find(|e| e.0 == addr) {
 			*value = is_ready;
-			let rsp = Message::Response { status: message::StatusCode::OK, content: message::ResponseBody::None };
-			self.sender.send((rsp, addr));
 			
 			let msg = Message::UpdateReady { addr: addr, is_ready: is_ready };
 			for player in &self.players {
-				if player.0 != addr {
-					self.sender.send((msg.clone(), player.0.clone()));
-				}
+				self.sender.send((msg.clone(), player.0.clone()));
 			}
 		}
 		Ok(StateResult::Ok)
@@ -109,8 +106,6 @@ impl RoomState {
 	fn exit_room(&mut self, addr: SocketAddr) -> Result<StateResult, GameError> {
 		if let Some(i) = self.players.iter().position(|e| e.0 == addr) {
 			self.players.remove(i);
-			let rsp = Message::Response { status: message::StatusCode::OK, content: message::ResponseBody::None };
-			self.sender.send((rsp, addr));
 			
 			let msg = Message::RemovePlayer(addr);
 			for (player, _) in &self.players {
