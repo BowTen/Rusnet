@@ -1,23 +1,25 @@
 use ggez::{Context, GameResult};
-use ggez::graphics::{Color, DrawMode, DrawParam, Mesh, Rect, Canvas};
+use ggez::graphics::{Canvas, Color, DrawMode, DrawParam, Drawable, Mesh, Rect};
 use rand::{rngs::ThreadRng, Rng};
 
 pub struct Map {
     pub fruits: Vec<Vec<bool>>,
-    n: u32,
+    map_size: u32,
+    cell_size: f32,
 }
 
 impl Map {
-    pub fn new(n: u32) -> Self {
+    pub fn new(map_size: u32, cell_size: f32) -> Self {
         Self {
-            fruits: vec![vec![false; n as usize]; n as usize],
-            n,
+            fruits: vec![vec![false; (map_size+1) as usize]; (map_size+1) as usize],
+            map_size,
+            cell_size,
         }
     }
 
     pub fn gen_fruit(&mut self, rng: &mut ThreadRng) {
-        let x = rng.gen_range(1..=self.n - 2);
-        let y = rng.gen_range(1..=self.n - 2);
+        let x = rng.gen_range(1..=self.map_size);
+        let y = rng.gen_range(1..=self.map_size);
         self.fruits[x as usize][y as usize] = true;
     }
 
@@ -27,23 +29,23 @@ impl Map {
         ret
     }
 
-	pub fn draw_map(&self, ctx: &mut Context, canvas: &mut Canvas, cell_size: f32, map_size: u32) -> GameResult {
-        let border_rect = Rect::new(0.0, 0.0, cell_size * map_size as f32, cell_size);
+	pub fn draw_map(&self, ctx: &mut Context, canvas: &mut Canvas) -> GameResult {
+        let border_rect = Rect::new(0.0, 0.0, self.cell_size * (self.map_size + 2) as f32, self.cell_size);
         canvas.draw(
             &Mesh::new_rectangle(ctx, DrawMode::fill(), border_rect, Color::WHITE)?,
             DrawParam::default(),
         );
-        let border_rect = Rect::new(0.0, cell_size * (map_size-1) as f32, cell_size * map_size as f32, cell_size);
+        let border_rect = Rect::new(0.0, self.cell_size * ((self.map_size + 2)-1) as f32, self.cell_size * (self.map_size + 2) as f32, self.cell_size);
         canvas.draw(
             &Mesh::new_rectangle(ctx, DrawMode::fill(), border_rect, Color::WHITE)?,
             DrawParam::default(),
         );
-        let border_rect = Rect::new(0.0, 0.0, cell_size, cell_size * map_size as f32);
+        let border_rect = Rect::new(0.0, 0.0, self.cell_size, self.cell_size * (self.map_size + 2) as f32);
         canvas.draw(
             &Mesh::new_rectangle(ctx, DrawMode::fill(), border_rect, Color::WHITE)?,
             DrawParam::default(),
         );
-        let border_rect = Rect::new(cell_size * (map_size-1) as f32, 0.0, cell_size, cell_size * map_size as f32);
+        let border_rect = Rect::new(self.cell_size * ((self.map_size + 2)-1) as f32, 0.0, self.cell_size, self.cell_size * (self.map_size + 2) as f32);
         canvas.draw(
             &Mesh::new_rectangle(ctx, DrawMode::fill(), border_rect, Color::WHITE)?,
             DrawParam::default(),
@@ -51,11 +53,11 @@ impl Map {
 		Ok(())
 	}
 
-	pub fn draw_fruits(&self, ctx: &mut Context, canvas: &mut Canvas, cell_size: f32) -> GameResult {
+	pub fn draw_fruits(&self, ctx: &mut Context, canvas: &mut Canvas) -> GameResult {
 		for (i, row) in self.fruits.iter().enumerate() {
             for (j, &has_fruit) in row.iter().enumerate() {
                 if has_fruit {
-                    let rect = Rect::new(i as f32 * cell_size, j as f32 * cell_size, cell_size, cell_size);
+                    let rect = Rect::new(i as f32 * self.cell_size, j as f32 * self.cell_size, self.cell_size, self.cell_size);
                     canvas.draw(
                         &Mesh::new_rectangle(ctx, DrawMode::fill(), rect, Color::RED)?,
                         DrawParam::default(),
@@ -65,4 +67,9 @@ impl Map {
         }
 		Ok(())
 	}
+
+    pub fn draw(&self, ctx: &mut Context, canvas: &mut Canvas) -> GameResult {
+        self.draw_map(ctx, canvas)?;
+        self.draw_fruits(ctx, canvas)
+    }
 }

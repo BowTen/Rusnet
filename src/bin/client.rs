@@ -8,7 +8,7 @@ const STEP_TIME: Duration = Duration::from_millis(180);
 fn main() {
     let (mut ctx, event_loop) = ggez::ContextBuilder::new("snake_game", "Your Name")
         .window_setup(ggez::conf::WindowSetup::default().title("贪吃蛇"))
-        .window_mode(ggez::conf::WindowMode::default().dimensions(CELL_SIZE * MAP_SIZE as f32, CELL_SIZE * MAP_SIZE as f32))
+        .window_mode(ggez::conf::WindowMode::default().dimensions(CELL_SIZE * (MAP_SIZE + 2) as f32, CELL_SIZE * (MAP_SIZE + 2) as f32))
         .build()
         .expect("无法创建上下文");
 

@@ -26,6 +26,16 @@ impl Direction {
 		}
 	}
 
+	pub fn coor_offset(&self) -> (i32, i32) {
+		match self {
+			Direction::Up => (0, -1),
+			Direction::Down => (0, 1),
+			Direction::Left => (-1, 0),
+			Direction::Right => (1, 0),
+			Direction::Rest => (0, 0),
+		}
+	}
+
 	pub fn inverse(&self) -> Self {
 		match self {
 			Direction::Up => Direction::Down,

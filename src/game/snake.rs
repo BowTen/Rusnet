@@ -12,25 +12,41 @@ pub struct Snake {
 	last_tail: Segment,
     dir: Direction,
 	next_dir: [Option<Direction>; 2],
-	n: u32,
+	map_size: u32,
 	last_step_time: Instant,
 	speed: f32,
 	step_time: Duration
 }
 
 impl Snake {
-    pub fn new(n: u32, speed: f32, step_time: Duration) -> Self {
+    pub fn new(map_size: u32, speed: f32, step_time: Duration) -> Self {
 		Self {
-            body: [(n / 2, n - 4).into(), (n / 2, n - 3).into()].iter().cloned().collect(),
-			last_tail: (n / 2, n - 2).into(),
+            body: [(map_size / 2 + 1, map_size - 3).into(), (map_size / 2 + 1, map_size - 2).into()].iter().cloned().collect(),
+			last_tail: (map_size / 2 + 1, map_size - 1).into(),
             dir: Direction::Up,
 			next_dir: [None, None],
-			n,
+			map_size,
 			last_step_time: Instant::now(),
 			speed,
 			step_time
         }
     }
+	
+	pub fn new_by_position(n: u32, speed: f32, step_time: Duration, x: u32, y: u32, dir: Direction) -> Self {
+		let (dx, dy) = dir.inverse().coor_offset();
+		let (x2, y2) = (((x as i32)+dx) as u32, ((y as i32)+dy) as u32);
+		let (x3, y3) = (((x2 as i32)+dx) as u32, ((y2 as i32)+dy) as u32);
+		Self {
+			body: [(x, y).into(), (x2, y2).into()].iter().cloned().collect(),
+			last_tail: (x3, y3).into(),
+			dir,
+			next_dir: [None, None],
+			map_size: n,
+			last_step_time: Instant::now(),
+			speed,
+			step_time
+		}
+	}
 
 	fn last_dir(&self) -> Direction {
 		if self.next_dir[1] != None {
@@ -73,7 +89,7 @@ impl Snake {
         }
 		self.last_tail = self.body.back().unwrap().clone();
 
-        if x <= 0 || x >= self.n-1 || y <= 0 || y >= self.n-1 || self.body.contains(&(x, y).into()) {
+        if x < 1 || x > self.map_size || y < 1 || y > self.map_size || self.body.contains(&(x, y).into()) {
 			self.last_step_time = Instant::now();
             return false;
         }

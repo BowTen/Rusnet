@@ -5,6 +5,7 @@ use ggez::event::EventHandler;
 use ggez::graphics::{self, Canvas, Color, Text};
 use ggez::input::keyboard::{self, KeyCode};
 use ggez::Context;
+use crate::client::PairGame;
 use crate::common::StateResult;
 use crate::common::*;
 use super::room_menu::RoomMenu;
@@ -24,6 +25,7 @@ impl MenuState {
 			selected: 0,
 			options: vec![
 				"Classic Mode".to_string(), 
+				"Pair Mode".to_string(), 
 				"Online Mode".to_string(),
 				"Exit".to_string(),
 			],
@@ -83,6 +85,7 @@ impl GameStateHandler for MenuState {
 						i if i < self.options.len() => {
 							match &self.options[i][0..] {
 								"Classic Mode" => return Ok(StateResult::NextState(Box::new(ClassicGame::new(self.map_size, self.cell_size, self.step_time)))),
+								"Pair Mode" => return Ok(StateResult::NextState(Box::new(PairGame::new(self.map_size, self.cell_size, self.step_time)))),
 								"Online Mode" => return Ok(StateResult::NextState(Box::new(RoomMenu::new(ctx, self.map_size, self.cell_size, self.step_time)))),
 								"Exit" => { ctx.request_quit(); return Ok(StateResult::Ok); }
 								_ => panic!("invalid option")
