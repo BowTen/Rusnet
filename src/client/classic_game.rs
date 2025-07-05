@@ -6,7 +6,6 @@ use ggez::Context;
 use ggez::graphics::Canvas;
 use ggez::input::keyboard::{self, KeyCode};
 use rand::{Rng, rngs::ThreadRng};
-use std::cell;
 use std::time::{Duration, Instant};
 
 use super::MenuState;

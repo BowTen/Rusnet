@@ -103,14 +103,15 @@ impl RoomMenu {
                             let rpswd = rpbox.content();
                             println!("{addr}\n{spswd}\n{rpswd}");
 
-                            match UdpSocket::bind("127.0.0.1:0") {
+                            match UdpSocket::bind("0.0.0.0:0") {
                                 Ok(socket) => {
                                     let msg = Message::NewRoom {
                                         server_password: spswd,
                                         room_password: rpswd,
                                     };
-                                    if let Err(_) = socket.send_msg_to(&msg, addr) {
-                                        abox.set_content("request err".to_string());
+                                    if let Err(e) = socket.send_msg_to(&msg, addr) {
+                                        abox.set_content(format!("1request err: {}", e).to_string());
+                                        println!("{}", format!("1request err: {}", e).to_string());
                                         return Ok(StateResult::Ok);
                                     }
                                     let mut buf = [0; 1024];
@@ -182,11 +183,12 @@ impl RoomMenu {
                             let rpswd = rpbox.content();
                             println!("{addr}\n{rpswd}");
 
-                            match UdpSocket::bind("127.0.0.1:0") {
+                            match UdpSocket::bind("0.0.0.0:0") {
                                 Ok(socket) => {
                                     let msg = Message::JoinRoom { password: rpswd };
-                                    if let Err(_) = socket.send_msg_to(&msg, addr) {
-                                        abox.set_content("request err".to_string());
+                                    if let Err(e) = socket.send_msg_to(&msg, addr) {
+                                        abox.set_content(format!("request err: {}", e).to_string());
+                                        println!("{}", format!("request err: {}", e).to_string());
                                         return Ok(StateResult::Ok);
                                     }
                                     let mut buf = [0; 1024];

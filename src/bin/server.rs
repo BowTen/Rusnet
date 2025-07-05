@@ -1,3 +1,4 @@
+use clap::{Arg, Parser};
 use rusnet::net::message::{Message, MessageSocket, ResponseBody, StatusCode};
 use std::{net::UdpSocket, process, time::Duration};
 
@@ -5,11 +6,19 @@ const CELL_SIZE: f32 = 35.0; // 每个格子大小
 const MAP_SIZE: u32 = 35; // 地图大小（30x30 格子）
 const STEP_TIME: Duration = Duration::from_millis(180);
 
-const PASSWORD: &str = "666666";
+#[derive(Parser, Debug)]
+struct Args {
+    #[clap(short, long, default_value = "target/debug/server_room")]
+    room_bin: String,
+    
+    #[clap(short, long, default_value = "666")]
+    password: String,
+}
 
 fn main() {
+    let args = Args::parse();
     //bind socket
-    let socket = UdpSocket::bind("127.0.0.1:8888").expect("Server Socket Bind Err");
+    let socket = UdpSocket::bind("0.0.0.0:8888").expect("Server Socket Bind Err");
 
     //listen for request to create room
     let mut buffer = [0; 1024];
@@ -21,10 +30,10 @@ fn main() {
                 room_password,
             } => {
                 //check password
-                if server_password == PASSWORD {
+                if server_password == args.password {
                     //create room
                     // TODO:fix run room
-                    if let Err(e) = process::Command::new("target/debug/server_room")
+                    if let Err(e) = process::Command::new(&args.room_bin)
                         .arg(client.to_string())
                         .arg(room_password.clone())
                         .spawn()

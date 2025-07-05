@@ -17,7 +17,7 @@ pub fn run() -> Result<
 > {
     let (out_sender, out_receiver) = mpsc::channel::<(Message, SocketAddr)>();
     let (in_sender, in_receiver) = mpsc::channel::<(Message, SocketAddr)>();
-    let socket = UdpSocket::bind("127.0.0.1:0").map_err(|e| "socket bind err".to_string())?;
+    let socket = UdpSocket::bind("0.0.0.0:0").map_err(|e| "socket bind err".to_string())?;
     socket
         .set_nonblocking(true)
         .map_err(|e| "set socket nonblocking err".to_string())?;
