@@ -13,3 +13,6 @@ mod room_menu;
 
 mod room_state;
 pub use room_menu::RoomMenu;
+
+mod online_game;
+pub use online_game::OnlineGame;

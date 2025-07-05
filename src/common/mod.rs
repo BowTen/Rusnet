@@ -14,3 +14,6 @@ pub mod tool;
 
 pub mod button;
 pub use button::Button;
+
+pub mod player;
+pub use player::Player;

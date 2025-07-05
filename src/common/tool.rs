@@ -1,66 +1,66 @@
 use ggez::input::keyboard::{KeyCode, KeyInput, KeyMods};
 
 pub fn to_char(key_input: &KeyInput) -> Option<char> {
-	if key_input.keycode == None {
-		return None
-	}
-	if let Some(c) = key_code_to_char(&key_input.keycode.unwrap()) {
-		if key_input.mods.contains(KeyMods::SHIFT) {
-			return match c {
-				'1' => Some('!'),
-		        '2' => Some('@'),
-		        '3' => Some('#'),
-		        '4' => Some('$'),
-		        '5' => Some('%'),
-		        '6' => Some('^'),
-		        '7' => Some('&'),
-		        '8' => Some('*'),
-		        '9' => Some('('),
-		        '0' => Some(')'),
-		        'a' => Some('A'),
-		        'b' => Some('B'),
-		        'c' => Some('C'),
-		        'd' => Some('D'),
-		        'e' => Some('E'),
-		        'f' => Some('F'),
-		        'g' => Some('G'),
-		        'h' => Some('H'),
-		        'i' => Some('I'),
-		        'j' => Some('J'),
-		        'k' => Some('K'),
-		        'l' => Some('L'),
-		        'm' => Some('M'),
-		        'n' => Some('N'),
-		        'o' => Some('O'),
-		        'p' => Some('P'),
-		        'q' => Some('Q'),
-		        'r' => Some('R'),
-		        's' => Some('S'),
-		        't' => Some('T'),
-		        'u' => Some('U'),
-		        'v' => Some('V'),
-		        'w' => Some('W'),
-		        'x' => Some('X'),
-		        'y' => Some('Y'),
-		        'z' => Some('Z'),
-		        '+' => Some('='),
-		        '-' => Some('_'),
-		        '/' => Some('?'),
-		        '.' => Some('>'),
-		        ',' => Some('<'),
-		        '[' => Some('{'),
-		        ']' => Some('}'),
-		        '\\' => Some('|'),
-		        ';' => Some(':'),
-		        '\'' => Some('\"'),
-				_ => Some(c),
-			};
-		}else {
-			return Some(c);
-		}
-	}else {
-		return None;
-	}
+    if key_input.keycode == None {
+        return None;
+    }
+    if let Some(c) = key_code_to_char(&key_input.keycode.unwrap()) {
+        if key_input.mods.contains(KeyMods::SHIFT) {
+            return match c {
+                '1' => Some('!'),
+                '2' => Some('@'),
+                '3' => Some('#'),
+                '4' => Some('$'),
+                '5' => Some('%'),
+                '6' => Some('^'),
+                '7' => Some('&'),
+                '8' => Some('*'),
+                '9' => Some('('),
+                '0' => Some(')'),
+                'a' => Some('A'),
+                'b' => Some('B'),
+                'c' => Some('C'),
+                'd' => Some('D'),
+                'e' => Some('E'),
+                'f' => Some('F'),
+                'g' => Some('G'),
+                'h' => Some('H'),
+                'i' => Some('I'),
+                'j' => Some('J'),
+                'k' => Some('K'),
+                'l' => Some('L'),
+                'm' => Some('M'),
+                'n' => Some('N'),
+                'o' => Some('O'),
+                'p' => Some('P'),
+                'q' => Some('Q'),
+                'r' => Some('R'),
+                's' => Some('S'),
+                't' => Some('T'),
+                'u' => Some('U'),
+                'v' => Some('V'),
+                'w' => Some('W'),
+                'x' => Some('X'),
+                'y' => Some('Y'),
+                'z' => Some('Z'),
+                '+' => Some('='),
+                '-' => Some('_'),
+                '/' => Some('?'),
+                '.' => Some('>'),
+                ',' => Some('<'),
+                '[' => Some('{'),
+                ']' => Some('}'),
+                '\\' => Some('|'),
+                ';' => Some(':'),
+                '\'' => Some('\"'),
+                _ => Some(c),
+            };
+        } else {
+            return Some(c);
+        }
+    } else {
+        return None;
+    }
 }
 
 fn key_code_to_char(key_code: &KeyCode) -> Option<char> {
