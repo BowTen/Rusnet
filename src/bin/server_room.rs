@@ -1,3 +1,4 @@
+use ggez::conf;
 use rusnet::server::{MainState, room_state::RoomState};
 use std::{net::SocketAddr, time::Duration};
 
@@ -10,13 +11,13 @@ fn main() {
     let host: SocketAddr = args[1].parse().expect("invalid addr");
     let password = args[2].clone();
 
-    let (mut ctx, event_loop) = ggez::ContextBuilder::new("snake_game", "Your Name")
-        // .window_mode(ggez::conf::WindowMode::default().visible(false))
-        .window_setup(ggez::conf::WindowSetup::default().title("贪吃蛇"))
-        .window_mode(ggez::conf::WindowMode::default().dimensions(
-            CELL_SIZE * (MAP_SIZE + 2) as f32,
-            CELL_SIZE * (MAP_SIZE + 2) as f32,
-        ))
+    let (mut ctx, event_loop) = ggez::ContextBuilder::new("snake_game", "Your Name").default_conf(conf)
+        .window_mode(ggez::conf::WindowMode::default().visible(false))
+        // .window_setup(ggez::conf::WindowSetup::default().title("贪吃蛇"))
+        // .window_mode(ggez::conf::WindowMode::default().dimensions(
+        //     CELL_SIZE * (MAP_SIZE + 2) as f32,
+        //     CELL_SIZE * (MAP_SIZE + 2) as f32,
+        // ))
         .build()
         .expect("无法创建上下文");
 
